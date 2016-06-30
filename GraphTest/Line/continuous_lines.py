@@ -1,6 +1,7 @@
 # Note that IPython are perfectly compatible with matplotlib
 # Automatically shutdown python when exit
 # However, when exiting PyCharm, the Python icon from matplotlib still exists
+# The issue has been solved by installing IPython
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
