@@ -6,12 +6,15 @@ from skimage.color import rgb2gray
 import glob
 from skimage.io import imread
 
+# multiple subfigures
+fig = plt.figure(figsize=(8,4))
+
 # Unix style pathname pattern expansion, e.g. glob.glob(r"C:\Users\Tavish\Deskto\pwint_sky.gif")[0]
 # String is to be treated as a raw string, exactly the string literals marked by a 'r'
-example_file = glob.glob("Assets/wint_sky.gif")[0]  # Out: 'Assets/wint_sky.gif'
+example_file = glob.glob("../Assets/wint_sky.gif")[0]  # Out: 'Assets/wint_sky.gif'
 im = imread(example_file, as_grey=True)
-plt.imshow(im, cmap=plt.get_cmap('gray'))
-plt.show()
+sp1 = fig.add_subplot(121)
+sp1.imshow(im, cmap=plt.get_cmap('gray'))
 
 # Counting: search continuous objects in the picture
 # Blobs are found using the Laplacian of Gaussian (LoG) method. For each blob found,
@@ -29,9 +32,12 @@ numrows = len(blobs_log)
 print("Number of stars : ", numrows)
 
 # Check whether there is a missing
-fig, ax = plt.subplots(1, 1)
-plt.imshow(im, cmap=plt.get_cmap('gray'))
+# fig, ax = plt.subplots(1, 1)
+sp2 = fig.add_subplot(122)
+sp2.imshow(im, cmap=plt.get_cmap('gray'))
 for blob in blobs_log:
     y, x, r = blob
     c = plt.Circle((x,y), r+5, color='lime', linewidth=2, fill=False)
-    ax.add_patch(c)
+    sp2.add_patch(c)
+
+plt.show()
