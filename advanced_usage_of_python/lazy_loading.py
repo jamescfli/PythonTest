@@ -11,8 +11,8 @@ class lazyattribute(object):
 
 class Foo(object):
     @lazyattribute
-    def bar(self):
-        print 'being lazy'
+    def bar(self):          # if already had, then skip
+        print 'being lazy'  # conduct
         return 42
 
 f = Foo()
