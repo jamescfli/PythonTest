@@ -37,7 +37,7 @@ with tf.name_scope('loss'):
 
 # optimizer
 with tf.name_scope('train'):
-    train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+    optimizer = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
 
 # initialize
 init = tf.initialize_all_variables()
@@ -48,16 +48,40 @@ saver = tf.train.Saver()
 # log_path
 logs_path = './tmp/tf_logs'
 
+# with tf.Session() as sess:
+#     # init
+#     sess.run(init)
+#     save_path = saver.save(sess, './saver/save_net.ckpt')
+#     print('Save to path: ', save_path)
+#     summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+#     for i in range(1000):
+#         summary = sess.run(optimizer, feed_dict={xs: x_data, ys: y_data})
+#         summary_writer.add_summary(summary, i)
+#         if i % 50 == 0:
+#             print(sess.run(loss, feed_dict={xs: x_data, ys: y_data}))
+
+# Create a summary to monitor cost tensor
+tf.summary.scalar("loss", loss)
+# # Create a summary to monitor accuracy tensor
+# tf.summary.scalar("accuracy", acc)
+# summary merged, merged the above
+merged_summary = tf.summary.merge_all()
+
 with tf.Session() as sess:
     # init
     sess.run(init)
     save_path = saver.save(sess, './saver/save_net.ckpt')
     print('Save to path: ', save_path)
     summary_writer = tf.summary.FileWriter(logs_path, graph=tf.get_default_graph())
+    # .. or summary_writer.add_graph(sess.graph) if not defined in the last line
     for i in range(1000):
-        summary = sess.run(train_step, feed_dict={xs: x_data, ys: y_data})
-        summary_writer.add_summary(summary, i)
+        # _, cost, summary = sess.run([optimizer, loss, merged_summary], feed_dict={xs: x_data, ys: y_data})
+        sess.run(optimizer, feed_dict={xs: x_data, ys: y_data})
+        # print('Iter #{}:{}'.format(i, cost))
+        # summary_writer.add_summary(summary, i)
         if i % 50 == 0:
-            print(sess.run(loss, feed_dict={xs: x_data, ys: y_data}))
+            cost, summary = sess.run([loss, merged_summary], feed_dict={xs: x_data, ys: y_data})
+            print('Iter #{}:{}'.format(i, cost))
+            summary_writer.add_summary(summary, i)  # write summary and iter # to file
 
-
+# visualize by tensorboard --logdir='./tmp/tf_logs'
