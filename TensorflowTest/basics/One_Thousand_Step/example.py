@@ -43,7 +43,7 @@ with tf.name_scope('train'):
 init = tf.initialize_all_variables()
 
 # saver
-saver = tf.train.Saver()
+saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
 
 # log_path
 logs_path = './tmp/tf_logs'
