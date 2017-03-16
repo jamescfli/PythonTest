@@ -3,7 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # read csv file
-person_count_hour_min_frame = np.loadtxt('data/person_counter.txt', delimiter=',')
+date = '20170304'
+# date = '20170310'
+person_count_hour_min_frame = np.loadtxt('data/person_counter_{}.txt'.format(date), delimiter=',')
 print person_count_hour_min_frame.shape     # (720, 510) 510 frames per minute
 
 # derive avg person count per minute,
@@ -31,5 +33,5 @@ hour_data = hour_data.flatten()
 pc_data = person_count_hour_min.flatten()
 
 # bar3d(x, y, z, dx, dy, dz, color=None, zsort='average', *args, **kwargs)
-ax2.bar3d(min_data, hour_data, np.zeros(len(pc_data)), 0.1, 0.5, pc_data, alpha=0.8, color='r')
+ax2.bar3d(min_data, hour_data, np.zeros(len(pc_data)), 0.1, 0.5, pc_data, alpha=0.7, color='r')
 plt.show()
