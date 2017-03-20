@@ -1,10 +1,9 @@
 import cv2
-import os
-import numpy
 
 
 # video_filepath = './video_clips/b.mp4'      # no problem for mp4
-video_filepath = './video_clips/b.webm'
+# video_filepath = './video_clips/b.webm'
+video_filepath = './video_clips/test.webm'
 # .. Issue: VIDEOIO(cvCreateFileCapture_AVFoundation (filename)): raised unknown C++ exception!
 
 print("loading {}".format(video_filepath))
