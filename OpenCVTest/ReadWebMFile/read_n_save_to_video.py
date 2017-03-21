@@ -18,8 +18,8 @@ output_shape = (480, 960)
 # const char* filename, int fourcc, double fps, CvSize frame_size, int is_color=1 (gray or color)
 # forcecc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
 # forcecc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
-forcecc = cv2.VideoWriter_fourcc(*'DIVX')
-out = cv2.VideoWriter('./video_out/output.avi', -1, 30.0, output_shape[::-1], isColor=True)
+forcecc = cv2.VideoWriter_fourcc(*'MPEG')
+out = cv2.VideoWriter('./video_out/output.avi', forcecc, 30.0, output_shape[::-1], isColor=True)
 print('finish init video writer')
 
 frame_counter = 0

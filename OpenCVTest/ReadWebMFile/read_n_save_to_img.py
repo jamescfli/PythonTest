@@ -27,9 +27,13 @@ while (cap.isOpened()):
     ret, frame = cap.read()
     if ret:
         frame_counter += 1
-        cv2.imwrite('{}frame_{:05d}.png'.format(img_out_tmp_path, frame_counter), frame)
+        cv2.imwrite('{}{:05d}.png'.format(img_out_tmp_path, frame_counter), frame)
     else:
         break
 print('Total # of frames: {}'.format(frame_counter))
 
 cap.release()
+
+# ffmpeg -framerate 15 -i ./img_out_tmp/%05d.png -s:v 1280x640 -c:v libx264 \
+#   -profile:v high -crf 20 -pix_fmt yuv420p ./video_out/man.mp4
+
