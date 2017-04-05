@@ -1,9 +1,12 @@
 import cv2
 
 
-# video_filepath = './video_clips/b.mp4'      # no problem for mp4
-video_filepath = './video_clips/b.webm'
+# video_filepath = './video_clips/b.mp4'      # no problem for .mp4 in general, but this one does not work
+# video_filepath = './video_clips/b.webm'
 # video_filepath = './video_clips/test.webm'
+video_filepath = './video_out/b_640x1280_15fps.mp4'
+# video_filepath = './video_out/b_640x1280_60fps.mp4'
+
 # .. Issue: VIDEOIO(cvCreateFileCapture_AVFoundation (filename)): raised unknown C++ exception!
 
 print("loading {}".format(video_filepath))
@@ -13,7 +16,10 @@ print("capture finished")
 
 output_shape = (480, 960)
 # const char* filename, int fourcc, double fps, CvSize frame_size, int is_color=1 (gray or color)
-out = cv2.VideoWriter('./video_out/output.mp4', -1, 60.0, output_shape[::-1])
+# forcecc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
+# forcecc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
+forcecc = cv2.VideoWriter_fourcc(*'MPEG')
+out = cv2.VideoWriter('./video_out/output.avi', forcecc, 30.0, output_shape[::-1], isColor=True)
 print('finish init video writer')
 
 frame_counter = 0
