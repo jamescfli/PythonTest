@@ -1,25 +1,25 @@
 import numpy as np
 
 
-print("Expected cross entropy loss if the model:")
-print("- learns neither dependency:", -(0.625 * np.log(0.625) +
-                                      0.375 * np.log(0.375)))
-print("- learns first dependency:  ",
-      -0.5 * (0.875 * np.log(0.875) + 0.125 * np.log(0.125))
-      -0.5 * (0.625 * np.log(0.625) + 0.375 * np.log(0.375)))
-print("- learns both dependencies: ",
-      -0.50 * (0.75 * np.log(0.75) + 0.25 * np.log(0.25))
-      - 0.25 * (2 * 0.50 * np.log (0.50)) - 0.25 * (0))
-
-# Expected cross entropy loss if the model:
-# ('- learns neither dependency:', 0.66156323815798213)
-# ('- learns first dependency:  ', 0.51916669970720941)
-# ('- learns both dependencies: ', 0.4544543674493905)
+# print("Expected cross entropy loss if the model:")
+# print("- learns neither dependency:", -(0.625 * np.log(0.625) +
+#                                       0.375 * np.log(0.375)))
+# print("- learns first dependency:  ",
+#       -0.5 * (0.875 * np.log(0.875) + 0.125 * np.log(0.125))
+#       -0.5 * (0.625 * np.log(0.625) + 0.375 * np.log(0.375)))
+# print("- learns both dependencies: ",
+#       -0.50 * (0.75 * np.log(0.75) + 0.25 * np.log(0.25))
+#       - 0.25 * (2 * 0.50 * np.log (0.50)) - 0.25 * (0))
+#
+# # Expected cross entropy loss if the model:
+# # ('- learns neither dependency:', 0.66156323815798213)
+# # ('- learns first dependency:  ', 0.51916669970720941)
+# # ('- learns both dependencies: ', 0.4544543674493905)
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-num_steps = 5
+num_steps = 5       # learn how many back steps
 batch_size = 200
 num_classes = 2
 state_size = 4
@@ -50,8 +50,8 @@ def gen_batch(raw_data, batch_size, num_steps):
     data_x = np.zeros([batch_size, batch_partition_length], dtype=np.int32)
     data_y = np.zeros([batch_size, batch_partition_length], dtype=np.int32)
     for i in range(batch_size):
-        data_x[i] = raw_x[batch_partition_length*i : batch_partition_length(i+1)]
-        data_y[i] = raw_y[batch_partition_length*i : batch_partition_length(i+1)]
+        data_x[i] = raw_x[batch_partition_length*i : batch_partition_length*(i+1)]
+        data_y[i] = raw_y[batch_partition_length*i : batch_partition_length*(i+1)]
     epoch_size = batch_partition_length // num_steps
 
     for i in range(epoch_size):
@@ -63,3 +63,78 @@ def gen_batch(raw_data, batch_size, num_steps):
 def gen_epochs(n, num_steps):
     for i in range(n):
         yield gen_batch(gen_data(), batch_size, num_steps)
+
+
+# build model
+x = tf.placeholder(tf.int32, [batch_size, num_steps], name='input_placeholder')
+y = tf.placeholder(tf.int32, [batch_size, num_steps], name='labels_placeholder')
+init_state = tf.zeros([batch_size, state_size])
+
+# turn x placeholder to a list of one-hot tensors
+# rnn_inputs is a list of num_steps tensors with shape [batch_size, num_classes]
+x_one_hot = tf.one_hot(x, num_classes)
+# print np.array(x_one_hot).shape     # ()
+rnn_inputs = tf.unstack(x_one_hot, axis=1)
+# print np.array(rnn_inputs).shape    # (5,)
+
+# define rnn cell
+with tf.variable_scope('rnn_cell'):
+    W = tf.get_variable('W', [num_classes+state_size, state_size])
+    b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
+
+def rnn_cell(rnn_input, state):
+    with tf.variable_scope('rnn_cell', reuse=True):
+        W = tf.get_variable('W', [num_classes+state_size, state_size])
+        b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
+    return tf.tanh(tf.matmul(tf.concat([rnn_input, state], 1), W) + b)
+
+# add rnn_cells to graph
+# this is static_rnn. in practice, it is better to use dynamic_rnn instead
+state = init_state
+rnn_outputs = []
+for rnn_input in rnn_inputs:
+    state = rnn_cell(rnn_input, state)
+    rnn_outputs.append(state)
+final_state = rnn_outputs[-1]
+
+# prediction, loss, training step
+with tf.variable_scope('softmax'):
+    W = tf.get_variable('W', [state_size, num_classes])
+    b = tf.get_variable('b', [num_classes], initializer=tf.constant_initializer(0.0))
+logits = [tf.matmul(rnn_output, W) + b for rnn_output in rnn_outputs]   # derived
+predictions = [tf.nn.softmax(logit) for logit in logits]
+# turn our y placeholder into a list of labels
+y_as_list = tf.unstack(y, num=num_steps, axis=1)                        # ground truth
+
+losses = [tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=logit)
+          for logit, label in zip(logits, y_as_list)]
+total_loss = tf.reduce_mean(losses)
+train_step = tf.train.AdagradOptimizer(learning_rate).minimize(total_loss)
+
+# train
+def train_network(num_epochs, num_steps, state_size=4, verbose=True):
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+        training_losses = []
+        for idx, epoch in enumerate(gen_epochs(num_epochs, num_steps)):
+            training_loss = 0
+            training_state = np.zeros((batch_size, state_size))
+            if verbose:
+                print("\nEpoch", idx)
+            for step, (X, Y) in enumerate(epoch):
+                tr_losses, training_loss_, training_state, _ = \
+                    sess.run([losses, total_loss, final_state, train_step],
+                             feed_dict={x:X, y:Y, init_state:training_state})
+                training_loss += training_loss_
+                if step % 100 == 0 and step > 0:
+                    if verbose:
+                        print("Average loss at step", step, "for last 250 steps:", training_loss/100)
+                    training_losses.append(training_loss/100)
+                    training_loss = 0
+    return training_losses
+
+training_losses = train_network(1, num_steps)
+plt.plot(training_losses)
+plt.show()
+# .. network very quickly learns to capture the first dependency (but not the second)
+# .. and expected cross-entropy loss of 0.52
