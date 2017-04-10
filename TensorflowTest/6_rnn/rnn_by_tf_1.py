@@ -72,12 +72,16 @@ x = tf.placeholder(tf.int32, [batch_size, num_steps], name='input_placeholder')
 y = tf.placeholder(tf.int32, [batch_size, num_steps], name='labels_placeholder')
 init_state = tf.zeros([batch_size, state_size])
 
-# turn x placeholder to a list of one-hot tensors
-# rnn_inputs is a list of num_steps tensors with shape [batch_size, num_classes]
-x_one_hot = tf.one_hot(x, num_classes)
-# print np.array(x_one_hot).shape     # ()
-rnn_inputs = tf.unstack(x_one_hot, axis=1)
-# print np.array(rnn_inputs).shape    # (5,)
+# # static rnn
+# # turn x placeholder to a list of one-hot tensors
+# # rnn_inputs is a list of num_steps tensors with shape [batch_size, num_classes]
+# x_one_hot = tf.one_hot(x, num_classes)
+# # print np.array(x_one_hot).shape     # ()
+# rnn_inputs = tf.unstack(x_one_hot, axis=1)
+# # print np.array(rnn_inputs).shape    # (5,)
+
+# dynamic rnn
+rnn_inputs = tf.one_hot(x, num_classes)
 
 # define rnn_cell
 # # method 1)
@@ -104,19 +108,31 @@ rnn_inputs = tf.unstack(x_one_hot, axis=1)
 
 # method 2) cleaner and simpler
 cell = tf.contrib.rnn.BasicRNNCell(state_size)
-rnn_outputs, final_state, = tf.contrib.rnn.static_rnn(cell, rnn_inputs, initial_state=init_state)
+
+# # static rnn
+# rnn_outputs, final_state = tf.contrib.rnn.static_rnn(cell, rnn_inputs, initial_state=init_state)
+
+# dynamic rnn
+rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, rnn_inputs, initial_state=init_state)
 
 # prediction, loss, training step
 with tf.variable_scope('softmax'):
     W = tf.get_variable('W', [state_size, num_classes])
     b = tf.get_variable('b', [num_classes], initializer=tf.constant_initializer(0.0))
-logits = [tf.matmul(rnn_output, W) + b for rnn_output in rnn_outputs]   # derived
-predictions = [tf.nn.softmax(logit) for logit in logits]
-# turn our y placeholder into a list of labels
-y_as_list = tf.unstack(y, num=num_steps, axis=1)                        # ground truth
 
-losses = [tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=logit)
-          for logit, label in zip(logits, y_as_list)]
+# # static rnn
+# logits = [tf.matmul(rnn_output, W) + b for rnn_output in rnn_outputs]
+# predictions = [tf.nn.softmax(logit) for logit in logits]
+# # turn our y placeholder into a list of labels
+# y_as_list = tf.unstack(y, num=num_steps, axis=1)                        # ground truth
+# losses = [tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label, logits=logit)
+#           for logit, label in zip(logits, y_as_list)]
+
+# dynamic rnn
+logits = tf.reshape(tf.matmul(tf.reshape(rnn_outputs, [-1, state_size]), W) + b, [batch_size, num_steps, num_classes])
+predictions = tf.nn.softmax(logits)
+losses = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=logits)
+
 total_loss = tf.reduce_mean(losses)
 train_step = tf.train.AdagradOptimizer(learning_rate).minimize(total_loss)
 
@@ -139,6 +155,7 @@ def train_network(num_epochs, num_steps, state_size=4, verbose=True):
                     if verbose:
                         # TODO figure out '250 steps'
                         print("Average loss at step", step, "for last 250 steps:", training_loss/100)
+                        # print('num_steps:', num_steps)    # = 10
                     training_losses.append(training_loss/100)
                     training_loss = 0
     return training_losses
@@ -151,3 +168,6 @@ plt.show()
 # .. and expected cross-entropy loss of 0.52
 
 # num_epochs = 10 -> (0.454)
+
+# dynamic RNN: dynamically create the graph at execution time
+# [batch_size, features] -> [batch_size, num_steps, features], i.e. num_steps can change during training
