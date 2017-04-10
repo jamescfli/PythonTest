@@ -19,10 +19,12 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-num_steps = 5       # learn how many back steps
+
+num_epochs = 10
+num_steps = 10      # learn how many back steps
 batch_size = 200
 num_classes = 2
-state_size = 4
+state_size = 16     # from 4 to 16 when num_steps is 10 > 8, for improving representing capability
 learning_rate = 0.1
 
 
@@ -77,25 +79,32 @@ x_one_hot = tf.one_hot(x, num_classes)
 rnn_inputs = tf.unstack(x_one_hot, axis=1)
 # print np.array(rnn_inputs).shape    # (5,)
 
-# define rnn cell
-with tf.variable_scope('rnn_cell'):
-    W = tf.get_variable('W', [num_classes+state_size, state_size])
-    b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
+# define rnn_cell
+# # method 1)
+# with tf.variable_scope('rnn_cell'):
+#     W = tf.get_variable('W', [num_classes+state_size, state_size])
+#     b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
+#
+#
+# def rnn_cell(rnn_input, state):
+#     with tf.variable_scope('rnn_cell', reuse=True):
+#         W = tf.get_variable('W', [num_classes+state_size, state_size])
+#         b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
+#     # tf.concat(values, axis, name='concat')
+#     return tf.tanh(tf.matmul(tf.concat([rnn_input, state], 1), W) + b)
+#
+# # add rnn_cells to graph
+# # this is static_rnn. in practice, it is better to use dynamic_rnn instead
+# state = init_state
+# rnn_outputs = []
+# for rnn_input in rnn_inputs:
+#     state = rnn_cell(rnn_input, state)
+#     rnn_outputs.append(state)
+# final_state = rnn_outputs[-1]
 
-def rnn_cell(rnn_input, state):
-    with tf.variable_scope('rnn_cell', reuse=True):
-        W = tf.get_variable('W', [num_classes+state_size, state_size])
-        b = tf.get_variable('b', [state_size], initializer=tf.constant_initializer(0.0))
-    return tf.tanh(tf.matmul(tf.concat([rnn_input, state], 1), W) + b)
-
-# add rnn_cells to graph
-# this is static_rnn. in practice, it is better to use dynamic_rnn instead
-state = init_state
-rnn_outputs = []
-for rnn_input in rnn_inputs:
-    state = rnn_cell(rnn_input, state)
-    rnn_outputs.append(state)
-final_state = rnn_outputs[-1]
+# method 2) cleaner and simpler
+cell = tf.contrib.rnn.BasicRNNCell(state_size)
+rnn_outputs, final_state, = tf.contrib.rnn.static_rnn(cell, rnn_inputs, initial_state=init_state)
 
 # prediction, loss, training step
 with tf.variable_scope('softmax'):
@@ -128,13 +137,17 @@ def train_network(num_epochs, num_steps, state_size=4, verbose=True):
                 training_loss += training_loss_
                 if step % 100 == 0 and step > 0:
                     if verbose:
+                        # TODO figure out '250 steps'
                         print("Average loss at step", step, "for last 250 steps:", training_loss/100)
                     training_losses.append(training_loss/100)
                     training_loss = 0
     return training_losses
 
-training_losses = train_network(1, num_steps)
+# training_losses = train_network(1, num_steps)
+training_losses = train_network(num_epochs=num_epochs, num_steps=num_steps, state_size=state_size)
 plt.plot(training_losses)
 plt.show()
 # .. network very quickly learns to capture the first dependency (but not the second)
 # .. and expected cross-entropy loss of 0.52
+
+# num_epochs = 10 -> (0.454)
