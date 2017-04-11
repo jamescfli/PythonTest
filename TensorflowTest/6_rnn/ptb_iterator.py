@@ -39,8 +39,12 @@ def ptb_iterator(raw_data, batch_size, num_steps, steps_ahead=1):
         y = data[:, i*num_steps+1:(i+1)*num_steps+steps_ahead]
         yield (x, y)
 
-    if epoch_size * num_steps < batch_len - steps_ahead:
-        yield (data[:, epoch_size*num_steps : batch_len - steps_ahead], data[:, epoch_size*num_steps + 1:])
+    if epoch_size * num_steps < batch_len - steps_ahead:    # 34800 < 34855
+        x = np.hstack((data[:, epoch_size*num_steps : batch_len - steps_ahead],
+                       np.zeros((batch_size, (epoch_size+1)*num_steps - (batch_len - steps_ahead)), dtype=np.int32)))
+        y = np.hstack((data[:, epoch_size*num_steps + 1:],
+                       np.zeros((batch_size, (epoch_size+1)*num_steps - (batch_len - steps_ahead)), dtype=np.int32)))
+        yield (x, y)
 
 
 def shuffled_ptb_iterator(raw_data, batch_size, num_steps):
