@@ -27,7 +27,7 @@ with tf.variable_scope("linearreg"):
     b = tf.get_variable("bias", (1,),
                         initializer=tf.constant_initializer(0.0))
     y_pred = tf.add(tf.matmul(X, W), b)
-    loss = tf.reduce_sum((y - y_pred)**2/n_samples)
+    loss = tf.reduce_sum((y - y_pred)**2/n_samples) # n_samples is constant, same with reduce_mean
 
 optimizer = tf.train.AdamOptimizer()
 # TensorFlow scope is not python scope! Python variable loss is still visible
