@@ -104,15 +104,33 @@ def generate_characters(g, checkpoint, num_chars, prompt='A', pick_top_chars=Non
     print("".join(chars))
     return "".join(chars)
 
-# g = build_graph(cell_type='GRU', num_steps=1, batch_size=1)
-# generate_characters(g, "saves/GRU_20_epochs", 750, prompt='A', pick_top_chars=5)
+g = build_graph(cell_type='GRU', num_steps=1, batch_size=1)
+generate_characters(g, "saves/GRU_20_epochs", 750, prompt='A', pick_top_chars=5)
 
-# new data to learn
-# file_url = 'https://gist.githubusercontent.com/spitis/59bfafe6966bfe60cc206ffbb760269f/' + \
-#     'raw/030a08754aada17cef14eed6fac7797cda830fe8/variousscripts.txt'
-file_name = 'variousscripts.txt'
-# if not os.path.exists(file_name):
-#     urllib.request.urlretrieve(file_url, file_name)
+# # new data to learn
+# file_name = 'variousscripts.txt'
+
+import urllib                       # python2
+# import urllib.request as urllib     # py3
+
+
+def web_lookup(url, saved={}):
+    if url in saved:
+        return saved[url]
+    page = urllib.urlopen(url).read()
+    saved[url] = page
+    return page
+
+file_url = 'https://gist.githubusercontent.com/spitis/59bfafe6966bfe60cc206ffbb760269f/' + \
+    'raw/030a08754aada17cef14eed6fac7797cda830fe8/variousscripts.txt'
+# import os
+# print os.getcwd()
+file_name = './saves/variousscripts.txt'
+file_content = web_lookup(file_url)
+print("Data length:", len(file_content))
+with open(file_name, 'w') as f:
+    f.write(file_content)
+    print('File content was written to ' + file_name)
 
 with open(file_name,'r') as f:
     raw_data = f.read()
