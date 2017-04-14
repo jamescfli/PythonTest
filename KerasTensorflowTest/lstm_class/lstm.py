@@ -17,8 +17,9 @@ def load_data(filename, seq_len, normalise_window):
 
     sequence_length = seq_len + 1   # len 50 + 1 (for prediction)
     result = []
-    for index in range(len(data) - sequence_length):    # sequence is largely overlapped
+    for index in range(len(data) - sequence_length):    # slide stride = 1, sequence is largely overlapped
         result.append(data[index: index + sequence_length])     # len = 51
+    # .. DL likes correlation in data, e.g. data augmentation
 
     if normalise_window:
         result = normalise_windows(result)  # (4121,51), all starts with 0.0 after normalization
