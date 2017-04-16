@@ -32,10 +32,10 @@ model.add(Bidirectional(LSTM(64)))
 model.add(Dropout(0.5))
 model.add(Dense(1, activation='sigmoid'))
 
-# embedding layer
-print(model.layers[0])
-print(model.layers[0].get_weights()[0].shape)
-print(model.layers[0].get_weights()[0][0, :])
+# # embedding layer
+# print(model.layers[0])
+# print(model.layers[0].get_weights()[0].shape)
+# print(model.layers[0].get_weights()[0][0, :])
 
 # try using different optimizers and different optimizer configs
 model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
@@ -43,8 +43,19 @@ model.compile('adam', 'binary_crossentropy', metrics=['accuracy'])
 print('Train...')
 model.fit(x_train, y_train,
           batch_size=batch_size,
-          epochs=4,
+          epochs=15,
           validation_data=[x_test, y_test])
+# Epoch 4/4
+# 25000/25000 [==============================] - 297s - loss: 0.0699 - acc: 0.9755 - val_loss: 0.7032 - val_acc: 0.8269
+# Epoch 2/15
+# 25000/25000 [==============================] - 297s - loss: 0.2221 - acc: 0.9137 - val_loss: 0.3512 - val_acc: 0.8449
+# Epoch 7/15
+# 25000/25000 [==============================] - 313s - loss: 0.0239 - acc: 0.9922 - val_loss: 0.7007 - val_acc: 0.8258
+# .. already > 0.80704 for basic lstm with 15 epochs
 
-# embedding layer after training
-print(model.layers[0].get_weights()[0][0, :])
+score, acc = model.evaluate(x_test, y_test, batch_size=batch_size)
+print('Test score:', score)
+print('Test accuracy:', acc)
+
+# # embedding layer after training
+# print(model.layers[0].get_weights()[0][0, :])
