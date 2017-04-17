@@ -165,7 +165,7 @@ g = build_graph()
 tr_losses, te_losses = train_graph(g)
 
 
-class BucketDataIterator():
+class BucketedDataIterator():
     def __init__(self, df, num_buckets = 5):
         df = df.sort_values('length').reset_index(drop=True)
         self.size = len(df) / num_buckets
