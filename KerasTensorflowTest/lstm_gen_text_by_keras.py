@@ -94,3 +94,48 @@ for iteration in range(1, 60):
 
 # .. text is making greater sense after each epoch
 # .. and increasing diversity makes less sense to the script due to averaging out the probability
+
+# the last epoch
+# ------------------------------
+# Iteration 59
+# Epoch 1/1
+# 200287/200287 [==============================] - 260s - loss: 1.3405      loss does not decrease too much
+#
+# ----- diversity: 0.2
+# ----- Generating with seed: "at we may be standing on
+# the threshold o"
+# at we may be standing on
+# the threshold one may be problem of the sacrifice and philosophy and species of the strange of the same and the present the subjection of man is not the strange of the man of the same man is not conception of the same intellect of the same things are subjection of the strange and philosophy and self-spiritual interest the presentience and spectations of the strange and serious and the present strange of the same
+#
+# ----- diversity: 0.5
+# ----- Generating with seed: "at we may be standing on
+# the threshold o"
+# at we may be standing on
+# the threshold of the best the greaters and conscious to
+# self consequences of the sense of the soul of the long away self-spiritual emplete they will let them. it is just the powerful for the form of small desirements, and world and
+# language with any serious of the entirely believe of the religion, have not still the philosophy and the man and man of the true. the man and conception of man as the christian high
+# t
+#
+# ----- diversity: 1.0
+# ----- Generating with seed: "at we may be standing on
+# the threshold o"
+# at we may be standing on
+# the threshold of to him may near it ascience; the i nown that the est that attained yours obk.=--as thereaf ofition aguntice, the remailed their christering intellecter--a destacte, all nature does not conection couradists
+#
+# k
+# 12. it of this investigates
+# be endures that is not prepaited of his cysicions the human's--mited and xcipless of longancic francion to distinction ofly above this detacity to
+# considerations
+#
+# ----- diversity: 1.2      still, does not make too much sense
+# ----- Generating with seed: "at we may be standing on
+# the threshold o"
+# at we may be standing on
+# the threshold of the
+# mansifuerisationion--it can, dones, the idealise exked,
+# unbutual predely them, now bying to havely.
+# aslelung, whether
+# extraordinary servine grals madely, thround; how woves shadders, mushtings." have to knew of after nater: how-pumbain danger, aptitude of -one would be yours, cause, perhaps use of
+# towards towards this modering
+# has ebever his powish in the pees natural
+# myself-expect it even r
