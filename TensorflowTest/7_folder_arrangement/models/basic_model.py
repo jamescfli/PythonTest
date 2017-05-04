@@ -99,7 +99,7 @@ class BasicAgent(object):
                 print "Epoch:", '%04d' % (epoch_id+1)
             self.learn_from_epoch()
 
-            if self.config['save_every'] > 0 and epoch_id % self.config['save_every'] == 0:
+            if self.config['save_every'] > 0 and (epoch_id+1) % self.config['save_every'] == 0:
                 self.save()
         if self.config['debug']:
             print "optimization finished."

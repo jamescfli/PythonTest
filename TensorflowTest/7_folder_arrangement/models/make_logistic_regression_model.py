@@ -15,6 +15,7 @@ class LogisticRegression(BasicAgent):
     def get_random_config(self, fixed_params={}):
         # static, because you want to be able to pass this to other processes
         # so they can independently generate random config of the current model
+        # do not forget to use np.random.seed(config['random_seed'])
         pass
 
     def build_graph(self, graph):
