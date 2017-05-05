@@ -30,14 +30,30 @@ class BasicAgent(object):
         # customize child models without inheritance hell, override function completely
         self.set_agent_props()
 
-        # child model should provide its own build graph func
-        self.graph = self.build_graph(tf.Graph())
+        # # child model should provide its own build graph func
+        # self.graph = self.build_graph(tf.Graph())
+        # # self.graph = self.build_graph(tf.get_default_graph())
+        #
+        # # any operations that should be in the graph can be added in this way
+        # with self.graph.as_default():
+        #     self.saver = tf.train.Saver(
+        #         max_to_keep=50,
+        #         # write_version=tf.train.SaverDef.V2,
+        #     )
+
+        # self.graph = tf.Graph()
+        # # .. ValueError: Fetch argument <tf.Operation 'init' type=NoOp> cannot be interpreted as a Tensor
+
+        self.graph = tf.get_default_graph()
 
         # any operations that should be in the graph can be added in this way
+        # this line overrides the current default graph for the lifetime of the context
         with self.graph.as_default():
+            # the following line within graph.as_default() makes saver record all tensors
+            self.graph = self.build_graph(self.graph)
             self.saver = tf.train.Saver(
                 max_to_keep=50,
-                write_version=tf.train.SaverDef.V2,
+                # write_version=tf.train.SaverDef.V2,
             )
 
         # other common code for initialization
@@ -47,6 +63,7 @@ class BasicAgent(object):
         self.sw = tf.summary.FileWriter(self.result_dir, self.sess.graph)
 
         # this is not always common to all models, so it is again separated from __init__ one
+        # parameter initialization is done in here
         self.init()
         # your model is expected to be ready now
 
@@ -75,21 +92,31 @@ class BasicAgent(object):
         # separate func to train per epoch and func to train globally
         raise Exception('The learn_from_epoch function must be overriden by the agent')
 
-    def train(self, save_every=1):
+    def train(self):
         # usually common to all models
         for epoch_id in range(0, self.max_iter):
+            if self.config['debug']:
+                print "Epoch:", '%04d' % (epoch_id+1)
             self.learn_from_epoch()
 
-            if save_every > 0 and epoch_id % save_every == 0:
+            if self.config['save_every'] > 0 and (epoch_id+1) % self.config['save_every'] == 0:
                 self.save()
+        if self.config['debug']:
+            print "optimization finished."
 
     def save(self):
         # usually common to all models
-        global_step_t = tf.train.get_global_step(self.graph)
-        global_step, episode_id = self.sess.run([global_step_t, self.episode_id])
+        # global_step_t = tf.train.get_global_step(self.graph)
+        # global_step, episode_id = self.sess.run([global_step_t, self.episode_id])
+
+        # global_step = self.sess.run(self.global_step_t)
+        # or by
+        global_step = tf.train.global_step(self.sess, self.global_step_t)
+
         if self.config['debug']:
             print('Saving to %s with global_step %d' % (self.result_dir, global_step))
-        self.saver.save(self.sess, self.result_dir + '/agent-ep_' + str(episode_id), global_step)
+        # self.saver.save(self.sess, self.result_dir + '/agent-ep_' + str(episode_id), global_step)
+        self.saver.save(self.sess, self.result_dir + '/agent', global_step)
 
         # always keep config of that
         if not os.path.isfile(self.result_dir + '/config.json'):
@@ -105,14 +132,13 @@ class BasicAgent(object):
         # this is an example
         checkpoint = tf.train.get_checkpoint_state(self.result_dir)
         if checkpoint is None:
-            # initialize randomly by init_op
-            self.sess.run(self.init_op)
+            # # initialize randomly by init_op
+            # self.sess.run(self.init_op)
+            # or
+            self.sess.run(tf.global_variables_initializer())
         else:
             # load the last saved model in the existing folder
             if self.config['debug']:
                 print('Loading the model from folder: %s' % self.result_dir)
             self.saver.restore(self.sess, checkpoint.model_checkpoint_path)
 
-    def infer(self):
-        # usually common to all models
-        pass
