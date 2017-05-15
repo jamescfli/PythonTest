@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 
+# read multiple tfrecords files
 def read_my_file_format(filename_queue):
     reader = tf.SomeReader()
     key, record_string = reader.read(filename_queue)

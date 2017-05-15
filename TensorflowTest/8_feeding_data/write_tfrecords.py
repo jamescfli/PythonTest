@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 # Converts MNIST data to TFRecords
 
 # absolute_import does not care about whether something is part of the standard library,
@@ -28,8 +31,8 @@ def _bytes_feature(value):
 
 
 def convert_to_tfrecords(data_set, name):
-    images = data_set.images
-    labels = data_set.labels
+    images = data_set.images    # shape (nb_samples, 28, 28, 1), dtype np.uint8
+    labels = data_set.labels    # shape (nb_samples), dtype np.uint8, range 0~9
     num_examples = data_set.num_examples
 
     if images.shape[0] != num_examples:
@@ -43,6 +46,8 @@ def convert_to_tfrecords(data_set, name):
     writer = tf.python_io.TFRecordWriter(filename)
     for index in range(num_examples):
         image_raw = images[index].tostring()
+        # class, initialized with features
+        # Magic attribute generated for "features" proto field.
         example = tf.train.Example(features=tf.train.Features(feature={
             'height': _int64_feature(rows),
             'width': _int64_feature(cols),
@@ -50,11 +55,17 @@ def convert_to_tfrecords(data_set, name):
             'label': _int64_feature(int(labels[index])),
             'image_raw': _bytes_feature(image_raw)
         }))
+        # features -> feature -> image_raw -> byteList -> value -> 0x/**
+        #                     -> depth    -> int64List -> value -> 1
+        #                     -> label
+        #                     -> width
+        #                     -> height
         writer.write(example.SerializeToString())
     writer.close()
 
 
 def main(_):        # _ : unused_argv
+    # class type: Dataset
     data_sets = mnist.read_data_sets(FLAGS.directory,
                                      dtype=tf.uint8,
                                      reshape=False,
@@ -75,5 +86,9 @@ if __name__ == '__main__':
                         default=5000,
                         help='Number of examples to seperate from the training data for validation')
     FLAGS, unparsed = parser.parse_known_args()
+    # print(FLAGS)        # Namespace(directory='/tmp/data', validation_size=5000)
+    # print(unparsed)     # []
+    # .. or use from tensorflow.python.platform import flags and flags.FLAGS
+
     # It's just a very quick wrapper that handles flag parsing and then dispatches to your own main
     tf.app.run(argv=[sys.argv[0]] + unparsed)
