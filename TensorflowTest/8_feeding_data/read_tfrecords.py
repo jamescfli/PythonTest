@@ -55,6 +55,14 @@ def inputs(train, batch_size, nb_epochs):
             # ensures a minimum amount of shuffling of examples
             min_after_dequeue=1000
         )
+        # min_after_dequeue:
+        #     Minimum number elements/samples in the queue after a dequeue,
+        #     used to ensure a level of mixing (shuffling) of elements.
+        #     in mnist example validation set has 5000 samples, so min_after_dequeue = 1000
+        # capacity: An integer. The maximum number of elements in the queue.
+        # Steps:
+        #   1) determine min_after_dequeue first, big -> more fair shuffle but slow start and large memory consumption
+        #   2) decide capacity according to min_after_dequeue + (num_threads + a small safety margin) * batch_size
         return images, sparse_labels    # output tensors
 
 
@@ -79,7 +87,7 @@ def run_training():
                 _, loss_value = sess.run([train_op, loss])
                 duration = time.time() - start_time
                 if step % 100 == 0:
-                    print('Step {}: loss = {:02f} ({:03f} sec)'.format(step, loss_value, duration))
+                    print('Step {}: loss = {:.02f} ({:.03f} sec)'.format(step, loss_value, duration))
                 step += 1
         except tf.errors.OutOfRangeError:
             print('Done training for {} epochs, {} steps'.format(cfg.FLAGS.nb_epochs, step))
