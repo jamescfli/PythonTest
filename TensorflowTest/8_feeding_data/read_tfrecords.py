@@ -5,17 +5,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import argparse
 import os.path
-import sys
 import time
 
 import tensorflow as tf
 
 from tensorflow.examples.tutorials.mnist import mnist
-
-# Basic model parameters as external flags.
-FLAGS = None
+import cfgs.tf_config_read as cfg
 
 # Constants used for dealing with the files, matches convert_to_records.
 TRAIN_FILE = 'train.tfrecords'
@@ -43,7 +39,7 @@ def inputs(train, batch_size, nb_epochs):
     # Note that an tf.train.QueueRunner is added to the graph, which
     # must be run using e.g. tf.train.start_queue_runners().
     if not nb_epochs: nb_epochs = None
-    filename = os.path.join(FLAGS.train_dir, TRAIN_FILE if train else VALIDATION_FILE)
+    filename = os.path.join(cfg.FLAGS.train_dir, TRAIN_FILE if train else VALIDATION_FILE)
     # .. could be with multiple files
     with tf.name_scope('input'):
         filename_queue = tf.train.string_input_producer([filename], num_epochs=nb_epochs)   # output a FIFOQuue
@@ -64,10 +60,10 @@ def inputs(train, batch_size, nb_epochs):
 
 def run_training():
     with tf.Graph().as_default():
-        images, labels = inputs(train=True, batch_size=FLAGS.batch_size, nb_epochs=FLAGS.nb_epochs)
-        logits = mnist.inference(images, FLAGS.hidden1, FLAGS.hidden2)
+        images, labels = inputs(train=True, batch_size=cfg.FLAGS.batch_size, nb_epochs=cfg.FLAGS.nb_epochs)
+        logits = mnist.inference(images, cfg.FLAGS.hidden1, cfg.FLAGS.hidden2)
         loss = mnist.loss(logits, labels)
-        train_op = mnist.training(loss, FLAGS.learning_rate)
+        train_op = mnist.training(loss, cfg.FLAGS.learning_rate)
         init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
 
         sess = tf.Session()
@@ -86,7 +82,7 @@ def run_training():
                     print('Step {}: loss = {:02f} ({:03f} sec)'.format(step, loss_value, duration))
                 step += 1
         except tf.errors.OutOfRangeError:
-            print('Done training for {} epochs, {} steps'.format(FLAGS.nb_epochs, step))
+            print('Done training for {} epochs, {} steps'.format(cfg.FLAGS.nb_epochs, step))
         finally:
             coord.request_stop()
 
@@ -99,31 +95,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--learning_rate',
-                        type=float,
-                        default=0.01,
-                        help='Initial learning rate')
-    parser.add_argument('--nb_epochs',
-                        type=int,
-                        default=2,
-                        help='Number of epochs to run trainer')
-    parser.add_argument('--hidden1',
-                        type=int,
-                        default=128,
-                        help='Number of hidden units in layer 1')
-    parser.add_argument('--hidden2',
-                        type=int,
-                        default=32,
-                        help='Number of hidden units in layer 2')
-    parser.add_argument('--batch_size',
-                        type=int,
-                        default=100,
-                        help='Batch size')
-    parser.add_argument('--train_dir',
-                        type=str,
-                        default='/tmp/data',
-                        help='Directory with the training data in tfrecords format')
-    FLAGS, unparsed = parser.parse_known_args()     # unparsed = []
-    tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
-
+    tf.app.run()
