@@ -201,6 +201,7 @@ def run_benchmark():
 
     # Start running operations on the Graph.
     config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
     config.gpu_options.allocator_type = 'BFC'
     sess = tf.Session(config=config)
     sess.run(init)
