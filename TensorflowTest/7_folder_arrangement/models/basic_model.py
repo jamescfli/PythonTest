@@ -30,31 +30,17 @@ class BasicAgent(object):
         # customize child models without inheritance hell, override function completely
         self.set_agent_props()
 
-        # # child model should provide its own build graph func
-        # self.graph = self.build_graph(tf.Graph())
-        # # self.graph = self.build_graph(tf.get_default_graph())
-        #
+        self.graph = tf.get_default_graph()
+
         # # any operations that should be in the graph can be added in this way
+        # # this line overrides the current default graph for the lifetime of the context
         # with self.graph.as_default():
+        #     # the following line within graph.as_default() makes saver record all tensors
+        #     self.graph = self.build_graph(self.graph)
         #     self.saver = tf.train.Saver(
         #         max_to_keep=50,
         #         # write_version=tf.train.SaverDef.V2,
         #     )
-
-        # self.graph = tf.Graph()
-        # # .. ValueError: Fetch argument <tf.Operation 'init' type=NoOp> cannot be interpreted as a Tensor
-
-        self.graph = tf.get_default_graph()
-
-        # any operations that should be in the graph can be added in this way
-        # this line overrides the current default graph for the lifetime of the context
-        with self.graph.as_default():
-            # the following line within graph.as_default() makes saver record all tensors
-            self.graph = self.build_graph(self.graph)
-            self.saver = tf.train.Saver(
-                max_to_keep=50,
-                # write_version=tf.train.SaverDef.V2,
-            )
 
         # other common code for initialization
         gpu_options = tf.GPUOptions(allow_growth=True)
@@ -115,8 +101,7 @@ class BasicAgent(object):
 
         if self.config['debug']:
             print('Saving to %s with global_step %d' % (self.result_dir, global_step))
-        # self.saver.save(self.sess, self.result_dir + '/agent-ep_' + str(episode_id), global_step)
-        self.saver.save(self.sess, self.result_dir + '/agent', global_step)
+        # self.saver.save(self.sess, self.result_dir + '/agent', global_step)
 
         # always keep config of that
         if not os.path.isfile(self.result_dir + '/config.json'):
