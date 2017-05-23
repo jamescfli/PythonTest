@@ -25,6 +25,9 @@ class NearestNeighbour(BasicAgent):
         self.xte = tf.placeholder(dtype=tf.float32, shape=[784])    # one vector compares with all in self.xtr
         self.distance = tf.reduce_sum(tf.abs(tf.add(self.xtr, tf.negative(self.xte))), reduction_indices=1)
         self.pred = tf.argmin(self.distance, 0)
+
+        self.global_step_t = tf.Variable(0, trainable=False, name='global_step_t')
+
         return graph
 
     def infer(self):

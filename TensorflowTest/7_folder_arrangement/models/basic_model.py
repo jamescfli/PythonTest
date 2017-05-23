@@ -91,12 +91,6 @@ class BasicAgent(object):
             print "optimization finished."
 
     def save(self):
-        # usually common to all models
-        # global_step_t = tf.train.get_global_step(self.graph)
-        # global_step, episode_id = self.sess.run([global_step_t, self.episode_id])
-
-        # global_step = self.sess.run(self.global_step_t)
-        # or by
         global_step = tf.train.global_step(self.sess, self.global_step_t)
 
         if self.config['debug']:

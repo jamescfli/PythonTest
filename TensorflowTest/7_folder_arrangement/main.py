@@ -38,7 +38,7 @@ flags.DEFINE_integer('max_iter', 100, 'Number of training steps')
 flags.DEFINE_float('lr', 0.01, 'learning rate')
 flags.DEFINE_integer('bsize', 32, 'batch size')
 flags.DEFINE_integer('nb_units', 1, 'Number of hidden nodes')
-flags.DEFINE_boolean('infer', True, 'Load an agent for playing')       # training first
+flags.DEFINE_boolean('infer', False, 'Load an agent for playing')       # training first
 
 # important for TensorBoard
 # choose to name the output folder
