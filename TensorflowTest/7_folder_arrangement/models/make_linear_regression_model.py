@@ -29,9 +29,12 @@ class LinearRegression(BasicAgent):
             .minimize(self.cost, global_step=self.global_step_t)
         return graph
 
+    def tf_summary(self):
+        self.sw = tf.summary.FileWriter(self.result_dir, self.sess.graph)
+
     def infer(self):
-        training_cost = self.sess.run(self.cost)
-        print "Training cost =", training_cost, " W =", self.sess.run(self.W), " b =", self.sess.run(self.b), '\n'
+        testing_cost = self.sess.run(self.cost)
+        print "Testing cost =", testing_cost, " W =", self.sess.run(self.W), " b =", self.sess.run(self.b), '\n'
 
     def learn_from_epoch(self):
         # separate func to train per epoch and func to train globally

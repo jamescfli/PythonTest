@@ -8,8 +8,8 @@ import tensorflow as tf
 import time
 
 # from models.make_linear_regression_model import make_model      # helper function to load any models you have
-# from models.make_logistic_regression_model import make_model
-from models.make_nearest_neighbour_model import make_model
+from models.make_logistic_regression_model import make_model
+# from models.make_nearest_neighbour_model import make_model
 # from hpsearch import hyperband, randomsearch
 
 # make my paths absolute to be independent from where python binary is called
@@ -18,7 +18,7 @@ dir = os.path.dirname(os.path.realpath(__file__))
 flags = tf.app.flags
 
 # general
-flags.DEFINE_string('model_name', 'linear_regression', 'name the model')
+flags.DEFINE_string('model_name', 'logistic_regression', 'name the model')
 flags.DEFINE_string('best', None, 'best model achieved so far')
 
 # HP search config
@@ -38,14 +38,18 @@ flags.DEFINE_integer('max_iter', 100, 'Number of training steps')
 flags.DEFINE_float('lr', 0.01, 'learning rate')
 flags.DEFINE_integer('bsize', 32, 'batch size')
 flags.DEFINE_integer('nb_units', 1, 'Number of hidden nodes')
-flags.DEFINE_boolean('infer', False, 'Load an agent for playing')       # training first
+flags.DEFINE_boolean('infer', False, 'Load an agent for playing')       # False: training first, True: testing/inferring
 
 # important for TensorBoard
 # choose to name the output folder
 flags.DEFINE_integer('save_every', 5, 'save model and intermediate results for every <> epochs')
 # fresh new directory by time.time()
+#   1) for training
 flags.DEFINE_string('result_dir', dir + '/results/' + flags.FLAGS.model_name + '/' + str(int(time.time())),
                     'Name of the directory to store/log the model (if it exists, the model will be loaded from it)')
+# #   2) for testing/inferring
+# flags.DEFINE_string('result_dir', dir + '/results/' + flags.FLAGS.model_name + '/' + '1495532417',
+#                     'Name of the directory to store/log the model (if it exists, the model will be loaded from it)')
 # # load previous models, both for (continuous) training and validation (inference)
 # flags.DEFINE_string('result_dir', dir + '/results/' + flags.FLAGS.model_name + '/' + '1493886629',
 #                     'Name of the directory to store/log the model (if it exists, the model will be loaded from it)')
@@ -67,7 +71,7 @@ def main(_):
         model = make_model(config)
 
         if config['infer']:
-            # code for infer
+            # code for testing/inferring
             model.infer()
         else:
             # code for training

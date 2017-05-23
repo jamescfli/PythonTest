@@ -37,16 +37,17 @@ class BasicAgent(object):
         with self.graph.as_default():
             # the following line within graph.as_default() makes saver record all tensors
             self.graph = self.build_graph(self.graph)
-            # self.saver = tf.train.Saver(
-            #     max_to_keep=50,
-            #     # write_version=tf.train.SaverDef.V2,
-            # )
+            self.saver = tf.train.Saver(
+                max_to_keep=50,
+                # write_version=tf.train.SaverDef.V2,     # default already
+            )
 
         # other common code for initialization
         gpu_options = tf.GPUOptions(allow_growth=True)
         sessConfig = tf.ConfigProto(gpu_options=gpu_options)
         self.sess = tf.Session(config=sessConfig, graph=self.graph)
-        self.sw = tf.summary.FileWriter(self.result_dir, self.sess.graph)
+        # prepare tf summary
+        self.tf_summary()
 
         # this is not always common to all models, so it is again separated from __init__ one
         # parameter initialization is done in here
@@ -78,6 +79,10 @@ class BasicAgent(object):
         # separate func to train per epoch and func to train globally
         raise Exception('The learn_from_epoch function must be overriden by the agent')
 
+    def tf_summary(self):
+        raise Exception('The tf_summary function must be overriden by the agent')
+        # basic form: self.sw = tf.summary.FileWriter(self.result_dir, self.sess.graph)
+
     def train(self):
         # usually common to all models
         for epoch_id in range(0, self.max_iter):
@@ -95,7 +100,7 @@ class BasicAgent(object):
 
         if self.config['debug']:
             print('Saving to %s with global_step %d' % (self.result_dir, global_step))
-        # self.saver.save(self.sess, self.result_dir + '/agent', global_step)
+        self.saver.save(self.sess, self.result_dir + '/agent', global_step)
 
         # always keep config of that
         if not os.path.isfile(self.result_dir + '/config.json'):

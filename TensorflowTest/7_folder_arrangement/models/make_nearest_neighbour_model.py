@@ -30,6 +30,9 @@ class NearestNeighbour(BasicAgent):
 
         return graph
 
+    def tf_summary(self):
+        self.sw = tf.summary.FileWriter(self.result_dir, self.sess.graph)
+
     def infer(self):
         accuracy = 0.
 
