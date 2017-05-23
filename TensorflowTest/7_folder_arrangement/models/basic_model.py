@@ -32,15 +32,15 @@ class BasicAgent(object):
 
         self.graph = tf.get_default_graph()
 
-        # # any operations that should be in the graph can be added in this way
-        # # this line overrides the current default graph for the lifetime of the context
-        # with self.graph.as_default():
-        #     # the following line within graph.as_default() makes saver record all tensors
-        #     self.graph = self.build_graph(self.graph)
-        #     self.saver = tf.train.Saver(
-        #         max_to_keep=50,
-        #         # write_version=tf.train.SaverDef.V2,
-        #     )
+        # any operations that should be in the graph can be added in this way
+        # this line overrides the current default graph for the lifetime of the context
+        with self.graph.as_default():
+            # the following line within graph.as_default() makes saver record all tensors
+            self.graph = self.build_graph(self.graph)
+            # self.saver = tf.train.Saver(
+            #     max_to_keep=50,
+            #     # write_version=tf.train.SaverDef.V2,
+            # )
 
         # other common code for initialization
         gpu_options = tf.GPUOptions(allow_growth=True)
