@@ -56,7 +56,7 @@ if __name__ == '__main__':
         return model
 
     model = get_model()
-    model = to_multi_gpu(model)
+    # model = to_multi_gpu(model, n_gpus=2)     # with 6s, without 1s
     x = np.random.rand(1000, 96, 96, 1)
     y = model.predict(x, verbose=True)
     # or model.fit()
