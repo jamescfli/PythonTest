@@ -24,12 +24,12 @@ print np.sum(Y, axis=1)
 print X.__class__
 print Y.__class__
 
-# # OK
-# plt.scatter(X[:, 0], X[:, 1], s=50, c=Y[:, 1], cmap=colors.ListedColormap(['orange', 'blue']))
-# plt.show()
-
-X = np.matrix(X)
+# OK
 plt.scatter(X[:, 0], X[:, 1], s=50, c=Y[:, 1], cmap=colors.ListedColormap(['orange', 'blue']))
 plt.show()
-# Issue: ValueError: Masked arrays must be 1-D
-# Solution: X = np.array(X)
+
+# X = np.matrix(X)
+# plt.scatter(X[:, 0], X[:, 1], s=50, c=Y[:, 1], cmap=colors.ListedColormap(['orange', 'blue']))
+# plt.show()
+# # Issue: ValueError: Masked arrays must be 1-D
+# # Solution: X = np.array(X)
