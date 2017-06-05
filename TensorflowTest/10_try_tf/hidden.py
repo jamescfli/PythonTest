@@ -1,5 +1,3 @@
-import tensorflow.python.platform
-
 import numpy as np
 import tensorflow as tf
 
@@ -17,9 +15,9 @@ tf.app.flags.DEFINE_string('train', 'simdata/saturn_data_train.csv',
                            'File containing the training data (labels & features).')
 tf.app.flags.DEFINE_string('test', 'simdata/saturn_data_eval.csv',
                            'File containing the test data (labels & features).')
-tf.app.flags.DEFINE_integer('num_epochs', 100,
+tf.app.flags.DEFINE_integer('num_epochs', 20,
                             'Number of passes over the training data.')
-tf.app.flags.DEFINE_integer('num_hidden', 15,
+tf.app.flags.DEFINE_integer('num_hidden', 100,
                             'Number of nodes in the hidden layer.')
 tf.app.flags.DEFINE_boolean('verbose', True, 'Produce verbose output.')
 tf.app.flags.DEFINE_boolean('plot', True, 'Plot the final decision boundary on the data.')
@@ -36,19 +34,19 @@ def extract_data(filename):
 
     # Iterate over the rows, splitting the label from the features. Convert labels
     # to integers and features to floats.
-    for line in file(filename):
+    for line in file(filename):     # file class has iterator property
         row = line.split(",")
-        labels.append(int(row[0]))
+        labels.append(int(row[0]))      # however the final output after net will be in float type
         fvecs.append([float(x) for x in row[1:]])
 
     # Convert the array of float arrays into a numpy float matrix.
     fvecs_np = np.array(fvecs).astype(np.float32)
 
     # Convert the array of int labels into a numpy array.
-    labels_np = np.array(labels).astype(dtype=np.uint8)
+    labels_np = np.array(labels).astype(dtype=np.uint8)     # either 0 or 1
 
     # Convert the int numpy array into a one-hot matrix.
-    labels_onehot = (np.arange(NUM_LABELS) == labels_np[:, None]).astype(np.float32)
+    labels_onehot = (np.arange(NUM_LABELS) == labels_np[:, None]).astype(np.float32)       # Boolean to Float number
 
     # Return a pair of the feature matrix and the one-hot label matrix.
     return fvecs_np, labels_onehot
@@ -60,9 +58,9 @@ def init_weights(shape, init_method='xavier', xavier_params = (None, None)):
         return tf.Variable(tf.zeros(shape, dtype=tf.float32))
     elif init_method == 'uniform':
         return tf.Variable(tf.random_normal(shape, stddev=0.01, dtype=tf.float32))
-    else: #xavier
+    else:   # xavier
         (fan_in, fan_out) = xavier_params
-        low = -4*np.sqrt(6.0/(fan_in + fan_out)) # {sigmoid:4, tanh:1} 
+        low = -4*np.sqrt(6.0/(fan_in + fan_out))    # {sigmoid:4, tanh:1}
         high = 4*np.sqrt(6.0/(fan_in + fan_out))
         return tf.Variable(tf.random_uniform(shape, minval=low, maxval=high, dtype=tf.float32))
 
@@ -82,6 +80,8 @@ def main(_):
     train_data, train_labels = extract_data(train_data_filename)
     test_data, test_labels = extract_data(test_data_filename)
 
+    # TODO save it to tfrecord format
+
     # Get the shape of the training data.
     train_size, num_features = train_data.shape
 
@@ -95,7 +95,7 @@ def main(_):
     # These placeholder nodes will be fed a batch of training data at each
     # training step using the {feed_dict} argument to the Run() call below.
     x = tf.placeholder("float", shape=[None, num_features])
-    y_ = tf.placeholder("float", shape=[None, NUM_LABELS])
+    y_ = tf.placeholder("float", shape=[None, NUM_LABELS])      # label, not the output tensor
     
     # For the test data, hold the entire dataset in one constant node.
     test_data_node = tf.constant(test_data)
@@ -108,7 +108,7 @@ def main(_):
         'xavier',
         xavier_params=(num_features, num_hidden))
 
-    b_hidden = init_weights([1,num_hidden],'zeros')
+    b_hidden = init_weights([1, num_hidden], 'zeros')
 
     # The hidden layer.
     hidden = tf.nn.tanh(tf.matmul(x, w_hidden) + b_hidden)
@@ -119,10 +119,10 @@ def main(_):
         'xavier',
         xavier_params=(num_hidden, NUM_LABELS))
     
-    b_out = init_weights([1,NUM_LABELS],'zeros')
+    b_out = init_weights([1, NUM_LABELS], 'zeros')
 
     # The output layer.
-    y = tf.nn.softmax(tf.matmul(hidden, w_out) + b_out)
+    y = tf.nn.softmax(tf.matmul(hidden, w_out) + b_out)     # to be compared with y_
     
     # Optimization.
     cross_entropy = -tf.reduce_sum(y_*tf.log(y))
@@ -132,6 +132,8 @@ def main(_):
     predicted_class = tf.argmax(y, 1);
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+
+    # All tensors are fully prepared
 
     # Create a local session to run this computation.
     with tf.Session() as sess:

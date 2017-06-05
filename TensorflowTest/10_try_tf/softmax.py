@@ -1,5 +1,3 @@
-import tensorflow.python.platform
-
 import numpy as np
 import tensorflow as tf
 
