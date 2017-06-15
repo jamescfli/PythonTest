@@ -13,7 +13,7 @@ from __future__ import print_function
 
 import os
 import sys
-# sys.path.append('.')
+sys.path.append('.')
 
 import tensorflow as tf
 
