@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 # # 1) split
 # value = tf.ones((5, 30), tf.int32)
@@ -38,3 +40,23 @@ import numpy as np
 # # rnn_inputs = [tf.squeeze(i, squeeze_dims=[1]) for i in tf.split(1, num_steps, x_one_hot)]
 
 # 4) MSE
+
+# 5) ELU
+x_np = np.linspace(-5, 5, 50)
+x_t = tf.constant(x_np, dtype=tf.float32)
+y_elu_t = tf.nn.elu(x_t, name='elu')
+
+alpha = 1.6732632423543772848170429916717
+scale = 1.0507009873554804934193349852946
+# # SELU = ELU when
+# alpha = 1
+# scale = 1
+y_selu_t = scale*tf.where(x_t>=0.0, x_t, alpha*tf.nn.elu(x_t))
+
+with tf.Session() as sess:
+    y_elu_np = sess.run(y_elu_t)
+    y_selu_np = sess.run(y_selu_t)
+    plt.plot(x_np, y_elu_np, '-b', label='elu')
+    plt.plot(x_np, y_selu_np, '-.r', label='selu')
+    plt.legend()
+    plt.show()
