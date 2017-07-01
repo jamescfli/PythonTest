@@ -44,6 +44,7 @@ scaler = StandardScaler().fit(mnist.train.images)
 # tensorboard
 logs_path = '~/tmp'
 
+
 # model
 def mlp_w_selu(x, weights, biases, dropout_rate, is_training):
     layer1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
@@ -57,6 +58,7 @@ def mlp_w_selu(x, weights, biases, dropout_rate, is_training):
     out_layer = tf.matmul(layer2, weights['out']) + biases['out']   # with linear activation
     return out_layer
 
+
 def mlp_w_bn_relu(x, weights, biases, dropout_rate, is_training):
     layer1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
     layer1 = layers.batch_norm(layer1, center=True, scale=True, is_training=is_training_t)
@@ -68,6 +70,18 @@ def mlp_w_bn_relu(x, weights, biases, dropout_rate, is_training):
 
     out_layer = tf.matmul(layer2, weights['out']) + biases['out']  # with linear activation
     return out_layer
+
+
+def mlp_w_relu(x, weights, biases, dropout_rate):
+    layer1 = tf.add(tf.matmul(x, weights['h1']), biases['b1'])
+    layer1 = tf.nn.relu(layer1)
+
+    layer2 = tf.add(tf.matmul(layer1, weights['h2']), biases['b2'])
+    layer2 = tf.nn.relu(layer2)
+
+    out_layer = tf.matmul(layer2, weights['out']) + biases['out']  # with linear activation
+    return out_layer
+
 
 # initialization with STDDEV of sqrt(1/n)
 weights = {
@@ -81,8 +95,9 @@ biases = {
     'out': tf.Variable(tf.random_normal([n_classes], stddev=0.0))
 }
 
-# pred = mlp_w_selu(x, weights, biases, dropout_rate=dropout_rate_t, is_training=is_training_t)
-pred = mlp_w_bn_relu(x, weights, biases, dropout_rate=dropout_rate_t, is_training=is_training_t)
+pred = mlp_w_selu(x, weights, biases, dropout_rate=dropout_rate_t, is_training=is_training_t)
+# pred = mlp_w_bn_relu(x, weights, biases, dropout_rate=dropout_rate_t, is_training=is_training_t)
+# pred = mlp_w_relu(x, weights, biases, dropout_rate=dropout_rate_t)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
 optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cost)
 
@@ -138,7 +153,9 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                                                                         is_training_t: False})
             print('Test Acc:', acc_test, 'Test Loss:', cost_test, "\n")
 
-# # with selu
+# on GTX 1080
+
+# # with selu only
 # Epoch: 0015 cost= 0.014958596
 # Train Acc: 1.0 Train Loss: 0.00565069
 # Test Acc: 0.990234 Test Loss: 0.0921781
@@ -147,3 +164,20 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 # Epoch: 0015 cost= 0.007487323
 # Train Acc: 0.9 Train Loss: 0.291616
 # Test Acc: 0.912109 Test Loss: 0.331339
+
+# on MBP
+
+# # with selu only
+# Epoch: 0015 cost= 0.015415900
+# Train Acc: 1.0 Train Loss: 0.00524706
+# Test Acc: 0.990234 Test Loss: 0.128706
+
+# # with bn relu
+# Epoch: 0015 cost= 0.008147774
+# Train Acc: 0.93 Train Loss: 0.236131
+# Test Acc: 0.929688 Test Loss: 0.235702
+
+# # with relu only
+# Epoch: 0015 cost= 0.009457376
+# Train Acc: 1.0 Train Loss: 0.00417209
+# Test Acc: 0.986328 Test Loss: 0.158517
